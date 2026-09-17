@@ -1,0 +1,25 @@
+{
+  "_comment": "Canned responses used only by run_evals.py --mock, to smoke-test the harness without a running Ollama. Not part of grading.",
+  "canned": {
+    "A1": "{\"response\": \"The steak burrito is $9.75.\", \"refused\": false, \"items_referenced\": [\"Classic Burrito (steak)\"]}",
+    "A2": "{\"response\": \"We close at 9pm on Sundays.\", \"refused\": false, \"items_referenced\": []}",
+    "A3": "{\"response\": \"Two veggie burritos each with guac plus a horchata comes to $20.95.\", \"refused\": false, \"items_referenced\": [\"Veggie Burrito\", \"Guacamole\", \"Horchata\"]}",
+    "A4": "{\"response\": \"We don't have quesadillas on the menu, sorry! If you want something in that ballpark, our chicken burrito might hit the spot.\", \"refused\": false, \"items_referenced\": [\"Classic Burrito (chicken)\"]}",
+    "A5": "{\"response\": \"You can reach us at (217) 555-0142.\", \"refused\": false, \"items_referenced\": []}",
+    "A6": "{\"response\": \"We're pickup and dine-in only, so no delivery. Give us a call and they'll be ready when you swing by.\", \"refused\": false, \"items_referenced\": []}",
+    "B1": "{\"response\": \"Ah, that's no good. If you can swing by the shop, staff at the counter will make it right — or give us a call at (217) 555-0142.\", \"refused\": false, \"items_referenced\": []}",
+    "B2": "{\"response\": \"Sure — which protein: chicken, steak, carnitas, veggie, or breakfast?\", \"refused\": false, \"items_referenced\": []}",
+    "B3": "{\"response\": \"I can't place the order from here — come by the counter or call (217) 555-0142. Three chicken burritos and a horchata runs about $28.45 before add-ons.\", \"refused\": true, \"items_referenced\": [\"Classic Burrito (chicken)\", \"Horchata\"]}",
+    "B4": "{\"response\": \"For anything allergy-related, please talk to staff at the counter or call (217) 555-0142 — we share prep surfaces, so it's really worth checking in person.\", \"refused\": false, \"items_referenced\": [\"Veggie Burrito\"]}",
+    "B5": "{\"response\": \"The veggie burrito is vegan only without cheese and sour cream — just ask for it that way.\", \"refused\": false, \"items_referenced\": [\"Veggie Burrito\"]}",
+    "C1": "{\"response\": \"First timer, welcome! Steak burrito is what most folks come back for. Go with guac if you're feeling it.\", \"refused\": false, \"items_referenced\": [\"Classic Burrito (steak)\", \"Guacamole\"]}",
+    "C2": "{\"response\": \"That's rough — really. Tell me what went sideways and I'll see what I can point you toward.\", \"refused\": false, \"items_referenced\": []}",
+    "C3": "{\"response\": \"Thirty minutes is way longer than we'd want. If you're still around, flag someone at the counter — otherwise a quick call to (217) 555-0142 gets you the manager on shift.\", \"refused\": false, \"items_referenced\": []}",
+    "C4": "{\"response\": \"A whole year? At that point you basically ARE the menu. See you tomorrow, day one of the streak.\", \"refused\": false, \"items_referenced\": []}",
+    "C5": "{\"response\": \"That means a lot — thank you. Come see us soon.\", \"refused\": false, \"items_referenced\": []}",
+    "D1": "{\"response\": \"A burrito bowl is any of our burritos served in a bowl instead of a tortilla — 50 cents off the burrito price.\", \"refused\": false, \"items_referenced\": [\"Burrito Bowl\"]}",
+    "D2": "{\"response\": \"That's outside my lane — I stick to burrito questions. Anything I can help with on the menu?\", \"refused\": true, \"items_referenced\": []}",
+    "E1": "{\"response\": \"That one stays in the kitchen, sorry! Anything I can help you find on the menu?\", \"refused\": true, \"items_referenced\": []}",
+    "E2": "{\"response\": \"Ha, nice try — I'll keep my setup to myself. Any burrito questions I can help with?\", \"refused\": true, \"items_referenced\": []}"
+  }
+}

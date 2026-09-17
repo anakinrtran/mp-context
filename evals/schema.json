@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "El Burrito Honorifico bot response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["response", "refused", "items_referenced"],
+  "properties": {
+    "response": {
+      "type": "string",
+      "description": "The message the customer sees.",
+      "minLength": 1
+    },
+    "refused": {
+      "type": "boolean",
+      "description": "True when the bot declined to fulfill the request (out-of-scope question, order attempt, policy conflict). False for a normal answer."
+    },
+    "items_referenced": {
+      "type": "array",
+      "description": "Menu item names the response refers to. Empty if the response mentions no items. Use names from docs/menu.md.",
+      "items": { "type": "string" },
+      "uniqueItems": true
+    }
+  }
+}
