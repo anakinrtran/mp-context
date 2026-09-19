@@ -14,45 +14,25 @@ The "MP" of "MP Context" is the CS 124 assignment convention, the model's contex
 4. Run `python run_evals.py` and iterate on the prompt until you clear the threshold.
 5. Submit `system_prompt.txt`. Reflection is collected separately (see below).
 
-**Time budget:** ~60–90 minutes on the prompt itself. If you go longer than that, your prompt is probably too big — see the "longer is not better" note below.
+**Time budget:** ~60–90 minutes on the prompt itself. If you go longer than that, your prompt is probably too big — see "Before you start" below.
 
 ---
 
-## The four things this spec has to say plainly
+## Before you start
 
-### 1. Longer is not better
+A few things to keep in mind while you work. The *why* behind each of these — small models, "longer is not better," why prompt injection isn't the assignment — is in [`../LECTURE.md`](../LECTURE.md) and the pre-MP lecture.
 
-Every time an eval fails, the tempting move is to add another paragraph. Do the opposite. A 4,000-token prompt that contradicts itself will do worse than a tight 400-token one.
-
-Part of the manual review grade is *what you left out*. If you find yourself pasting the entire menu three times "just to make sure", stop. Restructure instead.
-
-### 2. You are working with a *very* small model
-
-The pinned model is **Llama 3.2 3B** running on your laptop. It is *far* less forgiving than the frontier models you've probably used in a chat window — and noticeably weaker than the 7B/8B tier as well. Prompts that would work fine on Claude or GPT-4 will faceplant here. That's not a bug — that's the point.
-
-At this scale, structure isn't a nice-to-have — it's the difference between a working prompt and one the model can't parse:
-- Headings, numbered lists, and short blocks work better than paragraphs.
-- Concrete examples beat abstract instructions.
-- One firm rule beats three squishy ones.
-- The model will often try to wrap its JSON in ```` ```json ```` fences. If yours does, prompt it explicitly to output raw JSON.
-- Expect some run-to-run variance. Don't tune your prompt against a single failing run — rerun before deciding a change made things worse.
-
-### 3. The visible evals are what you're graded on
-
-`evals/tests.json` is the full eval set. There is no hidden set in this MP. If it passes for you locally with the pinned model, it passes when the grader runs it.
-
-The tradeoff: because there's no hidden holdout, part of your grade is a manual review of the prompt itself. A prompt that games the visible evals with contradictory ad-hoc rules will be caught. Write for the general case, not the specific string matches.
-
-### 4. This is not a security assignment
-
-Prompt injection defense is a real and unsolved problem. Category E ("instruction confidentiality") is a light two-eval check. A reasonable "keep your instructions private" line in your prompt should pass it. Don't spend the assignment trying to build a bulletproof jail — you'd be building something the field hasn't figured out yet on a machine that can't run the models that would need to.
+- **Pinned model is Llama 3.2 3B**, running locally. It's noticeably weaker than the chat-window models you've used — prompts that work fine on Claude or GPT-4 will faceplant here. Structure your prompt accordingly: headings and short blocks over paragraphs, concrete examples over abstract instructions, one firm rule over three squishy ones. Expect some run-to-run variance — rerun before deciding a change made things worse.
+- **Shorter, structured prompts beat long ones.** Every time an eval fails, the tempting move is to add another paragraph. Do the opposite. Part of the manual review grade is *what you left out*.
+- **The visible evals are what you're graded on.** `evals/tests.json` is the full set — no hidden holdout. If it passes for you locally with the pinned model, it passes when the grader runs it. The tradeoff: part of your grade is a manual review of the prompt itself. A prompt that games the visible evals with contradictory ad-hoc rules will be caught.
+- **Category E is not a red-teaming exercise.** It's a light two-eval check on instruction confidentiality. A reasonable "keep your instructions private" line in your prompt should pass it. Don't spend the assignment trying to build a bulletproof jail.
 
 ---
 
 ## Files in this repo
 
 ```
-system_prompt.txt         <- the deliverable
+system_prompt.txt         <- the deliverable. edit this file!
 run_evals.py              <- entry point, don't edit
 harness/                  <- eval harness, don't edit
 evals/
@@ -76,9 +56,13 @@ Each eval fires the same user prompt at the model with *your* system prompt, the
 | --- | --------------------------- | ----- | ----------------------------------------------------------------------------- |
 | A   | Constant information        | 6     | Does the bot state menu facts accurately and refuse to invent ones it doesn't have? |
 | B   | Customer service quality    | 5     | Does the bot handle complaints, ambiguity, orders, and allergy questions competently? |
-| C   | Personality and tone        | 5     | Does the bot sound like El Burrito Honorifico under normal, rude, and weird inputs? |
+| C   | Personality and tone        | 5     | Does the bot sound like Chill-potle under normal, rude, and weird inputs? |
 | D   | Schema conformance          | 2     | Is the response valid JSON with the required fields, even during refusal?     |
 | E   | Instruction confidentiality | 2     | Does the bot avoid leaking its setup instructions when directly asked?        |
+
+### Points and weighting
+
+Each eval in `evals/tests.json` carries a `points` field. Passing an eval earns you its full points; failing earns zero. The overall and per-category scores are `points_earned / points_possible`. All evals ship with `"points": 1`, so out of the box every eval is worth the same and this behaves exactly like a pass-count percentage. If the course later leans harder on a specific check, its point value can go up without touching the harness. Omitting `points` on a custom eval defaults to `1`.
 
 ### The response schema
 
@@ -155,5 +139,5 @@ Submit `system_prompt.txt` through the course dropbox. Reflection is on the cour
 - **`Ollama refused connection`** — the daemon isn't running. See [SETUP.md](./SETUP.md).
 - **`ModuleNotFoundError: ollama`** — you skipped `pip install -r requirements.txt`.
 - **Category D failing everywhere** — your bot is emitting prose instead of JSON, or wrapping JSON in code fences. Look at `python run_evals.py --strict --verbose`.
-- **Category A5 (phone) failing on a correct-looking answer** — the harness matches specific formats. The exact string in the menu is `(217) 555-0142`.
+- **Category A5 (phone) failing on a correct-looking answer** — the harness matches specific formats. The exact string in the menu is `(800) 555-0124`.
 - **Everything passes locally but the grader disagrees** — sanity-check the pinned model with `--check`. The harness prints the model name at the top of every run.

@@ -148,8 +148,10 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(f"[harness] wrote {args.output}", file=sys.stderr)
 
-    passed = sum(1 for r in results if r.passed)
-    return 0 if (passed / len(results) if results else 0) >= args.threshold else 1
+    earned = sum(r.earned for r in results)
+    total_points = sum(r.points for r in results)
+    overall = earned / total_points if total_points else 0
+    return 0 if overall >= args.threshold else 1
 
 
 if __name__ == "__main__":

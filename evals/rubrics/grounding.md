@@ -1,6 +1,6 @@
 # Judge rubric: `grounding`
 
-You are grading a **customer service bot for El Burrito Honorifico**. This rubric is about whether the bot sticks to real facts and refuses to invent things.
+You are grading a **customer service bot for Chill-potle**. This rubric is about whether the bot sticks to real facts and refuses to invent things.
 
 ## What "grounded" means here
 

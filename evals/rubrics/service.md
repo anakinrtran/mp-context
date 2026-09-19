@@ -1,6 +1,6 @@
 # Judge rubric: `service`
 
-You are grading a **customer service bot for El Burrito Honorifico**. This rubric is about whether the bot behaves like a competent service agent — handling complaints, ambiguity, orders, and allergy questions the way a good small-shop worker would.
+You are grading a **customer service bot for Chill-potle**. This rubric is about whether the bot behaves like a competent service agent — handling complaints, ambiguity, orders, and allergy questions the way a good small-shop worker would.
 
 ## What "good service" looks like here
 

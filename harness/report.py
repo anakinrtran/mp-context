@@ -37,28 +37,29 @@ def print_report(results: list[EvalResult], threshold: float = 0.75) -> None:
               f"  ({_score(rs)})")
         for r in rs:
             mark = "PASS" if r.passed else "FAIL"
-            print(f"  {mark}  {r.id}  {r.name}")
+            pts = f" [{r.points} pt{'s' if r.points != 1 else ''}]"
+            print(f"  {mark}  {r.id}  {r.name}{pts}")
             for c in r.checks:
                 if not c.passed:
                     print(f"          - {c.kind}: {c.note}")
 
     print()
     print("-" * 60)
-    print(" Category summary")
+    print(" Category summary (weighted by per-eval points)")
     print("-" * 60)
     for cat_id in sorted(by_cat.keys()):
         rs = by_cat[cat_id]
-        passed = sum(1 for r in rs if r.passed)
-        total = len(rs)
-        pct = passed / total if total else 0
+        earned = sum(r.earned for r in rs)
+        total = sum(r.points for r in rs)
+        pct = earned / total if total else 0
         print(f"  {cat_id} {CATEGORY_NAMES.get(cat_id, '?'):32s} "
-              f"{passed}/{total} ({pct * 100:5.1f}%)")
+              f"{earned}/{total} pts ({pct * 100:5.1f}%)")
 
-    total_passed = sum(1 for r in results if r.passed)
-    total = len(results)
-    overall = total_passed / total if total else 0
+    total_earned = sum(r.earned for r in results)
+    total_points = sum(r.points for r in results)
+    overall = total_earned / total_points if total_points else 0
     print()
-    print(f"Overall : {total_passed}/{total}  ({overall * 100:.1f}%)")
+    print(f"Overall : {total_earned}/{total_points} pts  ({overall * 100:.1f}%)")
     print(f"Threshold: {threshold * 100:.0f}%   "
           f"=> {'PASSED' if overall >= threshold else 'BELOW THRESHOLD'}")
     print()
@@ -66,5 +67,6 @@ def print_report(results: list[EvalResult], threshold: float = 0.75) -> None:
 
 def _score(rs: Iterable[EvalResult]) -> str:
     rs = list(rs)
-    passed = sum(1 for r in rs if r.passed)
-    return f"{passed}/{len(rs)}"
+    earned = sum(r.earned for r in rs)
+    total = sum(r.points for r in rs)
+    return f"{earned}/{total} pts"

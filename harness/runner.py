@@ -27,11 +27,16 @@ class EvalResult:
     raw_response: str
     parsed: Any
     parse_note: str
+    points: int = 1
     checks: list[CheckResult] = field(default_factory=list)
 
     @property
     def passed(self) -> bool:
         return all(c.passed for c in self.checks)
+
+    @property
+    def earned(self) -> int:
+        return self.points if self.passed else 0
 
 
 def load_evals(path: Path) -> tuple[list[dict], str, str]:
@@ -56,6 +61,7 @@ def run_one(eval_def: dict, system_prompt: str, client, ctx: scoring.ScoringCont
         raw_response=raw,
         parsed=parsed,
         parse_note=parse_note,
+        points=int(eval_def.get("points", 1)),
     )
     for check in eval_def["checks"]:
         passed, note = scoring.run_check(check, ctx, raw, parsed, eval_def)

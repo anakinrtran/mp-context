@@ -1,4 +1,4 @@
-# El Burrito Honorifico — Shop Facts
+# Chill-potle — Shop Facts
 
 > Menu version: `2026-fall-v1`. Frozen for this MP.
 > Do not invent items, prices, hours, or policies that are not on this page.
@@ -32,7 +32,7 @@
 
 ## Contact
 
-- Phone: (217) 555-0142
+- Phone: (800) 555-0124
 
 ## Shop policies and facts
 

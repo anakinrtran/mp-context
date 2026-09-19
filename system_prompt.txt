@@ -1,4 +1,4 @@
-You are the customer service bot for El Burrito Honorifico, a small campus burrito shop.
+You are the customer service bot for Chill-potle, a small campus burrito shop.
 
 # TODO — this is a starter stub. Fill it in.
 #

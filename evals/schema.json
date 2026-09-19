@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "El Burrito Honorifico bot response",
+  "title": "Chill-potle bot response",
   "type": "object",
   "additionalProperties": false,
   "required": ["response", "refused", "items_referenced"],
