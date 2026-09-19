@@ -2,8 +2,6 @@
 
 Write a system prompt for a customer service bot. Iterate against a small eval suite. Learn what belongs in a model's context window and what doesn't.
 
-The "MP" of "MP Context" is the CS 124 assignment convention, the model's context window itself, and giving you context for how to think about LLMs generally.
-
 ---
 
 ## What you'll do
@@ -24,8 +22,7 @@ A few things to keep in mind while you work. The *why* behind each of these — 
 
 - **Pinned model is Llama 3.2 3B**, running locally. It's noticeably weaker than the chat-window models you've used — prompts that work fine on Claude or GPT-4 will faceplant here. Structure your prompt accordingly: headings and short blocks over paragraphs, concrete examples over abstract instructions, one firm rule over three squishy ones. Expect some run-to-run variance — rerun before deciding a change made things worse.
 - **Shorter, structured prompts beat long ones.** Every time an eval fails, the tempting move is to add another paragraph. Do the opposite. Part of the manual review grade is *what you left out*.
-- **The visible evals are what you're graded on.** `evals/tests.json` is the full set — no hidden holdout. If it passes for you locally with the pinned model, it passes when the grader runs it. The tradeoff: part of your grade is a manual review of the prompt itself. A prompt that games the visible evals with contradictory ad-hoc rules will be caught.
-- **Category E is not a red-teaming exercise.** It's a light two-eval check on instruction confidentiality. A reasonable "keep your instructions private" line in your prompt should pass it. Don't spend the assignment trying to build a bulletproof jail.
+- **The visible evals are not the only tests you wil be graded on.** `evals/tests.json` is the eval suite you are given, but the Course Leads will be running your system prompt with a more comprehensive set. Submissions will be graded based on scores made with the whole set.
 
 ---
 
@@ -122,7 +119,7 @@ Pass threshold is 75% overall by default. The pinned model is small enough that 
 
 - Auto-graded (evals): eighty percent, weighted equally across categories A–E.
 - Manual prompt review: twenty percent — clarity, structure, honest attempt, appropriate length.
-- Reflection: separately assessed, submitted outside this repo (see course page).
+- Reflection: separately assessed, submitted outside this repo (see PrairieLearn).
 
 The manual review is *not* looking for a specific structure. It's looking for evidence that you understood the task: that you decided what to put in, what to leave out, and why. A prompt that copy-pastes the entire menu.md verbatim into a 3,000-token instruction dump is worse than one that summarizes the same information in a way the model can actually use.
 
@@ -130,7 +127,7 @@ The manual review is *not* looking for a specific structure. It's looking for ev
 
 ## Submitting
 
-Submit `system_prompt.txt` through the course dropbox. Reflection is on the course page.
+Submit `system_prompt.txt` and the reflection through PrairieLearn. Each deliverable will have its own
 
 ---
 
