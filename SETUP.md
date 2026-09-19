@@ -1,6 +1,6 @@
 # Mini Project 01: Context — Setup
 
-Target: under 45 minutes, in parallel with the lecture portion of class. The model pull can be done in the background, so **start steps 1-2**  while you do everything else.
+Target: under 45 minutes, in parallel with the lecture portion of tthe Mini. The model pull can be done in the background, so **start steps 1-2**  while you do everything else.
 
 ## 1. Install Ollama
 
@@ -18,7 +18,7 @@ ollama --version
 ollama pull llama3.2:3b
 ```
 
-This is the model everyone in the class uses, and the model the grader uses. Do not swap to a different tag — a bigger model might feel more capable when you test locally, but Course Leads will grade on 3B, and a prompt tuned to a bigger model will underperform there.
+This is the model everyone in the class will use for this Mini, and the model the grader uses. Do not swap to a different tag — a bigger model might feel more capable when you test locally, but Course Leads will grade on 3B, and a prompt tuned to a bigger model will underperform there.
 
 The pull is roughly 2GB. On campus wifi it can take ~10-20 minutes. Start it before anything else.
 
