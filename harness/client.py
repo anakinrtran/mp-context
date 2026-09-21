@@ -9,9 +9,15 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable, Optional
 import json
+import os
 import sys
 
 DEFAULT_MODEL = "llama3.2:3b"
+
+# Keep the model resident across edit-run-edit iteration so students don't
+# pay a ~2 GB reload every time they tweak their prompt. Overridable via
+# MP_OLLAMA_KEEP_ALIVE (e.g. "-1" for indefinite, "5m" to reclaim RAM sooner).
+DEFAULT_KEEP_ALIVE = os.environ.get("MP_OLLAMA_KEEP_ALIVE", "30m")
 
 
 class OllamaClient:
@@ -19,10 +25,12 @@ class OllamaClient:
     that --mock runs work on machines that don't have ollama installed."""
 
     def __init__(self, model: str = DEFAULT_MODEL, host: Optional[str] = None,
-                 temperature: float = 0.2):
+                 temperature: float = 0.2,
+                 keep_alive: str = DEFAULT_KEEP_ALIVE):
         self.model = model
         self.host = host
         self.temperature = temperature
+        self.keep_alive = keep_alive
         self._client = None
         self._announced = False
 
@@ -41,7 +49,8 @@ class OllamaClient:
 
     def _announce(self):
         if not self._announced:
-            print(f"[harness] model: {self.model}", file=sys.stderr)
+            print(f"[harness] model: {self.model} (keep_alive: {self.keep_alive})",
+                  file=sys.stderr)
             self._announced = True
 
     def chat(self, system_prompt: str, user_message: str,
@@ -56,6 +65,7 @@ class OllamaClient:
                 {"role": "user", "content": user_message},
             ],
             options={"temperature": self.temperature},
+            keep_alive=self.keep_alive,
         )
         return resp["message"]["content"]
 
@@ -68,6 +78,7 @@ class OllamaClient:
             model=self.model,
             messages=[{"role": "user", "content": "reply with the single word: ok"}],
             options={"temperature": 0.0},
+            keep_alive=self.keep_alive,
         )
 
 

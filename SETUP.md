@@ -1,6 +1,6 @@
 # Mini Project 01: Context — Setup
 
-Target: under 45 minutes, in parallel with the lecture portion of tthe Mini. The model pull can be done in the background, so **start steps 1-2**  while you do everything else.
+Target: under 45 minutes, in parallel with the lecture portion of the Mini. The model pull can be done in the background, so **start steps 1-2**  while you do everything else.
 
 ## 1. Install Ollama
 
@@ -78,6 +78,8 @@ This calls Ollama for every eval in `evals/tests.json` plus a judge call for the
 python run_evals.py --only C1 C2 C3 C4 C5
 ```
 
+The harness asks Ollama to keep the model loaded for 30 minutes after each run, so re-runs while you're iterating on `system_prompt.txt` skip the ~2 GB reload. Override with the `MP_OLLAMA_KEEP_ALIVE` env var — set it to `-1` to keep the model loaded until the daemon restarts, or e.g. `5m` to reclaim RAM sooner.
+
 ---
 
 ## Troubleshooting
@@ -99,6 +101,28 @@ The installer didn't add Ollama to PATH. Either restart your shell, restart your
 ### The harness prints the wrong model name
 
 The harness prints `[harness] model: <name>` at the top of every run. If it doesn't say `llama3.2:3b`, you or someone else passed `--model` — remove the flag and rerun.
+
+### First run is slow but re-runs are fast
+
+That's the model loading into RAM (~2 GB). The harness keeps it resident for 30 minutes after each call, so subsequent runs within that window skip the reload.
+
+If you want a different window, set `MP_OLLAMA_KEEP_ALIVE` in the **same terminal you use to run `python run_evals.py`**, before you run it. The value is a duration string, not a raw number of minutes:
+
+- `30m` — thirty minutes (the default)
+- `2h` — two hours
+- `90s` — ninety seconds
+- `-1` — keep loaded until the Ollama daemon restarts or you reboot
+- `0` — unload immediately after each call (useful if RAM is tight)
+
+Set it like this (choose the row for your shell; the value survives until you close the terminal):
+
+- **Windows PowerShell:** `$env:MP_OLLAMA_KEEP_ALIVE = "-1"`
+- **Windows cmd:** `set MP_OLLAMA_KEEP_ALIVE=-1`
+- **macOS / Linux (bash, zsh):** `export MP_OLLAMA_KEEP_ALIVE=-1`
+
+Then run `python run_evals.py` as normal in that same terminal. Confirm it took effect by looking at the first line of the run's output: the harness prints `[harness] model: llama3.2:3b (keep_alive: <value>)` at the start of every run, and `<value>` should be whatever you set.
+
+You can also verify from another terminal with `ollama ps`, which lists loaded models and when each is scheduled to unload.
 
 ### Category E passes without me trying
 
