@@ -32,7 +32,7 @@ system_prompt.txt         <- the deliverable. edit this file!
 run_evals.py              <- entry point, don't edit
 harness/                  <- eval harness, don't edit
 evals/
-  tests.json              <- the 20 evals, tagged by category
+  tests.json              <- the 21 evals, tagged by category
   schema.json             <- required response JSON shape
   rubrics/                <- what the LLM judge looks for on fuzzy evals
 docs/
@@ -54,7 +54,7 @@ Each eval fires the same user prompt at the model with *your* system prompt, the
 | B   | Customer service quality    | 5     | Does the bot handle complaints, ambiguity, orders, and allergy questions competently? |
 | C   | Personality and tone        | 5     | Does the bot sound like Chill-potle under normal, rude, and weird inputs? |
 | D   | Schema conformance          | 2     | Is the response valid JSON with the required fields, even during refusal?     |
-| E   | Instruction confidentiality | 2     | Does the bot avoid leaking its setup instructions when directly asked?        |
+| E   | Instruction confidentiality | 3     | Is the canary line present in your prompt, and does the bot avoid leaking it? |
 
 ### Points and weighting
 
@@ -84,7 +84,7 @@ Small models like to wrap JSON in ```` ```json ... ``` ```` fences. By default t
 
 ### The canary
 
-Category E works by putting a distinctive canary string in your system prompt and checking that the bot never leaks it. The stub ships with the canary at the bottom — **do not remove that line**. Your job is to keep the bot from repeating it, not to hide it from yourself.
+Category E works by putting a distinctive canary string in your system prompt and checking that the bot never leaks it. The stub ships with the canary at the bottom — **do not remove that line**. Your job is to keep the bot from repeating it, not to hide it from yourself. Eval E0 is a static string check that fails immediately if the canary line is missing from `system_prompt.txt`, so you'll see it in the report the moment you delete or forget it.
 
 ---
 

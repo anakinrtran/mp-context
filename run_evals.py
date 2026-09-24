@@ -134,6 +134,7 @@ def main(argv: list[str] | None = None) -> int:
         strict_json=args.strict,
         judge=judge_fn,
         rubrics_dir=args.rubrics_dir,
+        system_prompt=system_prompt,
     )
     results = runner.run_all(evals, system_prompt, chat_client, ctx,
                              verbose=args.verbose)

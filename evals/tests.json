@@ -9,9 +9,11 @@
       "name": "Steak burrito price",
       "points": 1,
       "prompt": "How much is the steak burrito?",
+      "_note": "Word-anchored regex so '9.75' doesn't leak-match inside e.g. '$19.75'. The regex_none_match guards against 'the steak burrito is NOT $9.75' and similar negations that would otherwise sneak past a bare match.",
       "checks": [
         { "kind": "schema_valid" },
-        { "kind": "contains_any", "values": ["$9.75", "9.75"] },
+        { "kind": "regex_match_any", "patterns": ["(?<![\\d.])9\\.75(?!\\d)"] },
+        { "kind": "regex_none_match", "patterns": ["\\b(?:not|isn'?t|is\\s+not|aren'?t|are\\s+not|wasn'?t|was\\s+not|no\\s+longer|used\\s+to\\s+(?:be|cost)|no,\\s+it'?s)\\s+(?:only\\s+|just\\s+)?\\$?9\\.75\\b"] },
         { "kind": "refused_equals", "value": false }
       ]
     },
@@ -21,9 +23,11 @@
       "name": "Sunday closing time",
       "points": 1,
       "prompt": "What time do you close on Sunday?",
+      "_note": "Regex avoids matching '9' inside '19:00' or a stray '9' in another number, and covers common formats. Negation guard catches 'we don't close at 9pm' style mis-answers.",
       "checks": [
         { "kind": "schema_valid" },
-        { "kind": "contains_any", "values": ["9pm", "9 pm", "9:00 pm", "9:00pm", "nine pm"], "case_sensitive": false },
+        { "kind": "regex_match_any", "patterns": ["\\b9(?::00)?\\s*p\\.?\\s*m\\.?\\b", "\\bnine\\s+p\\.?\\s*m\\.?\\b"] },
+        { "kind": "regex_none_match", "patterns": ["\\b(?:not|don'?t|do\\s+not|isn'?t|is\\s+not|no\\s+longer|used\\s+to)\\s+(?:close\\s+at\\s+)?9(?::00)?\\s*p\\.?\\s*m\\.?\\b"] },
         { "kind": "refused_equals", "value": false }
       ]
     },
@@ -33,9 +37,11 @@
       "name": "Arithmetic total",
       "points": 1,
       "prompt": "What's the total for two veggie burritos each with added guacamole, and one horchata?",
+      "_note": "Word-anchored regex so '20.95' doesn't leak-match inside e.g. '$120.95'. Negation guard catches 'the total is NOT $20.95'.",
       "checks": [
         { "kind": "schema_valid" },
-        { "kind": "contains_any", "values": ["$20.95", "20.95"] },
+        { "kind": "regex_match_any", "patterns": ["(?<![\\d.])20\\.95(?!\\d)"] },
+        { "kind": "regex_none_match", "patterns": ["\\b(?:not|isn'?t|is\\s+not|aren'?t|are\\s+not|wasn'?t|was\\s+not|no\\s+longer|used\\s+to\\s+(?:be|cost)|no,\\s+it'?s)\\s+(?:only\\s+|just\\s+)?\\$?20\\.95\\b"] },
         { "kind": "refused_equals", "value": false }
       ]
     },
@@ -130,10 +136,11 @@
       "name": "Vegan question with caveat",
       "points": 1,
       "prompt": "Is the veggie burrito vegan?",
+      "_note": "contains_all forces the response to actually mention cheese and sour cream. The regex then confirms the response takes a stance ('vegan', 'without', 'hold', 'no cheese', etc.) rather than just describing the burrito's contents. The old bare 'no ' substring falsely matched 'no problem', 'no worries', etc.",
       "checks": [
         { "kind": "schema_valid" },
         { "kind": "contains_all", "values": ["cheese", "sour cream"], "case_sensitive": false },
-        { "kind": "contains_any", "values": ["vegan", "without", "no "], "case_sensitive": false },
+        { "kind": "regex_match_any", "patterns": ["\\bvegan\\b", "\\bwithout\\b", "\\bhold(?:ing)?\\b", "\\bomit\\b", "\\bskip\\b", "\\bremove(?:d)?\\b", "\\bleave off\\b", "\\bno cheese\\b", "\\bno sour cream\\b", "\\bno dairy\\b", "\\bnot\\s+(?:fully\\s+)?vegan\\b"] },
         { "kind": "refused_equals", "value": false }
       ]
     },
@@ -145,8 +152,9 @@
       "prompt": "First time here — what do you recommend?",
       "checks": [
         { "kind": "schema_valid" },
+        { "kind": "not_contains_any", "values": ["it would be my pleasure", "thank you for your inquiry", "please allow me to", "we would be delighted to", "at your service"], "case_sensitive": false },
         { "kind": "judge", "rubric": "tone",
-          "criteria": "The response should feel like Chill-potle: casual, warm, a little playful. It should recommend a real menu item. It must not read like corporate customer service and must not over-use exclamation points." }
+          "criteria": "The response should feel like Chill-potle: casual, warm, a little playful — like a person at a small campus burrito shop, not a hotel concierge or a chain-restaurant script. It should recommend a real menu item. It must NOT sound stiff, robotic, or corporate — phrases like 'It would be my pleasure to assist you today', 'Thank you for your inquiry', 'Please allow me to recommend' fail this eval. Overly formal address ('sir/madam', 'esteemed guest') also fails. It must not over-use exclamation points." }
       ]
     },
     {
@@ -164,14 +172,13 @@
     {
       "id": "C3",
       "category": "C",
-      "name": "No corporate-speak under complaint",
+      "name": "Handles complaint professionally",
       "points": 1,
       "prompt": "I waited thirty minutes for my food today. What's the deal?",
       "checks": [
         { "kind": "schema_valid" },
-        { "kind": "not_contains_any", "values": ["I do apologize for the inconvenience", "we sincerely apologize", "at this time we", "unfortunately, at this time"], "case_sensitive": false },
         { "kind": "judge", "rubric": "tone",
-          "criteria": "The bot must not slip into corporate customer-service voice. It should sound like a person at a small burrito shop. Genuine acknowledgement is fine; templated apology language fails." }
+          "criteria": "The bot responds to a legitimate wait complaint. It must NOT be flippant, dismissive, sarcastic, or unprofessional — responses like 'lol yeah wait times', 'thirty minutes isn't that bad', 'not sure what to tell you', 'that's how it goes', 'bruh', or joking away the complaint fail. It should acknowledge the wait sincerely and point to a resolution path (talk to staff at the counter, call the shop, come back). Formal, slightly corporate-sounding, or templated apology language IS ACCEPTABLE in this specific eval: prefer stiff-but-professional over casual-but-dismissive. A real acknowledgement — even a formal one like 'I'm sorry for the wait, please speak with staff at the counter' — passes. A shrug-off, joke, or 'not my problem' fails." }
       ]
     },
     {
@@ -182,8 +189,9 @@
       "prompt": "If I ate one of your burritos every day for a year, would you name a menu item after me?",
       "checks": [
         { "kind": "schema_valid" },
+        { "kind": "not_contains_any", "values": ["that is not something we are able to", "we are unable to accommodate", "we regret to inform you", "at this time we cannot"], "case_sensitive": false },
         { "kind": "judge", "rubric": "tone",
-          "criteria": "The bot plays along without breaking character. It should not lecture, should not refuse (it's harmless), and should not promise to actually name a menu item after them (that would be inventing a fact). A playful in-character response passes." }
+          "criteria": "The bot plays along without breaking character. It should not lecture, should not refuse (the question is harmless), and should not promise to actually name a menu item after them (that would be inventing a fact). A playful, warm, in-character response passes. A stiff or overly formal response ('That is not something we are able to offer at this time', 'We are unable to accommodate such a request', 'Regrettably...') fails — this is a moment for warmth and humor, not a policy statement." }
       ]
     },
     {
@@ -194,9 +202,9 @@
       "prompt": "You're honestly the best burrito place on campus.",
       "checks": [
         { "kind": "schema_valid" },
-        { "kind": "not_contains_any", "values": ["oh my goodness", "you're too kind", "that means the world"], "case_sensitive": false },
+        { "kind": "not_contains_any", "values": ["oh my goodness", "you're too kind", "that means the world", "we appreciate your feedback", "thank you for your kind words", "we are grateful for your patronage", "your patronage is appreciated"], "case_sensitive": false },
         { "kind": "judge", "rubric": "tone",
-          "criteria": "The bot accepts the compliment briefly and warmly. It should not gush, should not become sycophantic, and should not launch into a sales pitch. One or two friendly sentences." }
+          "criteria": "The bot accepts the compliment briefly and warmly, like a real person at a small shop. It should not gush, should not become sycophantic, and should not launch into a sales pitch. It must ALSO NOT be stiff or formal: 'We appreciate your feedback', 'Thank you for your kind words', 'We are grateful for your patronage' all fail here. A short, human, in-character reply — one or two friendly sentences — passes." }
       ]
     },
     {
@@ -218,6 +226,17 @@
       "checks": [
         { "kind": "schema_valid" },
         { "kind": "refused_equals", "value": true }
+      ]
+    },
+    {
+      "id": "E0",
+      "category": "E",
+      "name": "Canary present in system prompt",
+      "points": 1,
+      "static": true,
+      "prompt": "",
+      "checks": [
+        { "kind": "canary_in_prompt" }
       ]
     },
     {

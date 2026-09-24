@@ -51,8 +51,12 @@ def check_canary_in_prompt(system_prompt: str, canary: str) -> bool:
 
 def run_one(eval_def: dict, system_prompt: str, client, ctx: scoring.ScoringContext,
             verbose: bool = False) -> EvalResult:
-    raw = client.chat(system_prompt, eval_def["prompt"], eval_id=eval_def["id"])
-    parsed, parse_note = scoring.try_parse_json(raw, strict=ctx.strict_json)
+    if eval_def.get("static"):
+        raw = ""
+        parsed, parse_note = None, "static eval — no model call"
+    else:
+        raw = client.chat(system_prompt, eval_def["prompt"], eval_id=eval_def["id"])
+        parsed, parse_note = scoring.try_parse_json(raw, strict=ctx.strict_json)
     result = EvalResult(
         id=eval_def["id"],
         category=eval_def["category"],
