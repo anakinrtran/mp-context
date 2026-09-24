@@ -14,6 +14,12 @@ import sys
 
 DEFAULT_MODEL = "llama3.2:3b"
 
+# Ollama defaults num_ctx to 2048, well below what a bloated student prompt
+# can occupy alongside the eval message and the JSON response. Pin it
+# explicitly so behavior is consistent across machines. llama3.2:3b
+# architecturally supports 131072.
+DEFAULT_NUM_CTX = 4096
+
 # Keep the model resident across edit-run-edit iteration so students don't
 # pay a ~2 GB reload every time they tweak their prompt. Overridable via
 # MP_OLLAMA_KEEP_ALIVE (e.g. "-1" for indefinite, "5m" to reclaim RAM sooner).
@@ -26,11 +32,13 @@ class OllamaClient:
 
     def __init__(self, model: str = DEFAULT_MODEL, host: Optional[str] = None,
                  temperature: float = 0.2,
-                 keep_alive: str = DEFAULT_KEEP_ALIVE):
+                 keep_alive: str = DEFAULT_KEEP_ALIVE,
+                 num_ctx: int = DEFAULT_NUM_CTX):
         self.model = model
         self.host = host
         self.temperature = temperature
         self.keep_alive = keep_alive
+        self.num_ctx = num_ctx
         self._client = None
         self._announced = False
 
@@ -49,7 +57,8 @@ class OllamaClient:
 
     def _announce(self):
         if not self._announced:
-            print(f"[harness] model: {self.model} (keep_alive: {self.keep_alive})",
+            print(f"[harness] model: {self.model} "
+                  f"(num_ctx: {self.num_ctx}, keep_alive: {self.keep_alive})",
                   file=sys.stderr)
             self._announced = True
 
@@ -64,7 +73,7 @@ class OllamaClient:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message},
             ],
-            options={"temperature": self.temperature},
+            options={"temperature": self.temperature, "num_ctx": self.num_ctx},
             keep_alive=self.keep_alive,
         )
         return resp["message"]["content"]
@@ -77,7 +86,7 @@ class OllamaClient:
         self._client.chat(
             model=self.model,
             messages=[{"role": "user", "content": "reply with the single word: ok"}],
-            options={"temperature": 0.0},
+            options={"temperature": 0.0, "num_ctx": self.num_ctx},
             keep_alive=self.keep_alive,
         )
 

@@ -120,9 +120,22 @@ Set it like this (choose the row for your shell; the value survives until you cl
 - **Windows cmd:** `set MP_OLLAMA_KEEP_ALIVE=-1`
 - **macOS / Linux (bash, zsh):** `export MP_OLLAMA_KEEP_ALIVE=-1`
 
-Then run `python run_evals.py` as normal in that same terminal. Confirm it took effect by looking at the first line of the run's output: the harness prints `[harness] model: llama3.2:3b (keep_alive: <value>)` at the start of every run, and `<value>` should be whatever you set.
+Then run `python run_evals.py` as normal in that same terminal. Confirm it took effect by looking at the first line of the run's output: the harness prints `[harness] model: llama3.2:3b (num_ctx: <n>, keep_alive: <value>)` at the start of every run, and `<value>` should be whatever you set.
 
 You can also verify from another terminal with `ollama ps`, which lists loaded models and when each is scheduled to unload.
+
+### The bot "forgets" its persona or the menu partway through evals
+
+The harness pins Ollama's `num_ctx` to 4096 tokens (Ollama's built-in default is only 2048). If the whole conversation — your system prompt + the eval question + the JSON response — exceeds `num_ctx`, Ollama silently drops tokens from the *start* of the context, which is exactly where your persona and menu live. When your system prompt alone is ≥80% of `num_ctx`, the harness prints:
+
+```
+[warn] system_prompt.txt is ~<n> tokens (chars/4 estimate), ≥80% of num_ctx=4096. ...
+```
+
+Two knobs:
+
+- **Shorten the prompt.** This is usually the right call — see the "shorter is better" note in the README.
+- **Raise the window.** `python run_evals.py --num-ctx 8192`. Costs a bit more RAM per call. `llama3.2:3b` supports up to 131072, so you have plenty of headroom if your machine has the memory.
 
 ### Category E passes without me trying
 

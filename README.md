@@ -20,7 +20,7 @@ Write a system prompt for a customer service bot. Iterate against a small eval s
 
 A few things to keep in mind while you work.
 - **Pinned model is Llama 3.2 3B**, running locally. It's noticeably weaker than the chat-window models you've used — prompts that work fine on Claude or GPT-4 will faceplant here. Structure your prompt accordingly: headings and short blocks over paragraphs, concrete examples over abstract instructions, one firm rule over three squishy ones. Expect some run-to-run variance — rerun before deciding a change made things worse.
-- **Shorter, structured prompts beat long ones.** Every time an eval fails, the tempting move is to add another paragraph. Do the opposite. Part of the manual review grade is *what you left out*.
+- **Shorter, structured prompts beat long ones.** Every time an eval fails, the tempting move is to add another paragraph. Do the opposite. Part of the manual review grade is *what you left out*. If the harness prints a `[warn]` that your prompt is ≥80% of the context window, the model may silently truncate its *own instructions* — evals then fail in ways that look like "the model forgot" rather than "the prompt was too long." See SETUP.md for the fix.
 - **The visible evals are not the only tests you wil be graded on.** `evals/tests.json` is the eval suite you are given, but the Course Leads will be running your system prompt with a more comprehensive set. Submissions will be graded based on scores made with the whole set.
 
 ---

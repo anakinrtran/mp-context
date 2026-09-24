@@ -49,6 +49,11 @@ def build_argparser() -> argparse.ArgumentParser:
                    help=f"Ollama model tag (default: {client_mod.DEFAULT_MODEL}).")
     p.add_argument("--host", default=None,
                    help="Ollama host URL, e.g. http://localhost:11434.")
+    p.add_argument("--num-ctx", type=int, default=client_mod.DEFAULT_NUM_CTX,
+                   help=f"Ollama context window size in tokens "
+                        f"(default: {client_mod.DEFAULT_NUM_CTX}). Lower on "
+                        f"very RAM-constrained machines; raise if a long "
+                        f"prompt needs more headroom.")
     p.add_argument("--check", action="store_true",
                    help="Skip evals — just verify Ollama is reachable and the "
                         "model is pulled, then exit.")
@@ -97,7 +102,8 @@ def main(argv: list[str] | None = None) -> int:
         chat_client = mock
         judge_fn = client_mod.make_mock_judge()
     else:
-        chat_client = client_mod.OllamaClient(model=args.model, host=args.host)
+        chat_client = client_mod.OllamaClient(model=args.model, host=args.host,
+                                              num_ctx=args.num_ctx)
         judge_fn = client_mod.make_ollama_judge(chat_client)
 
     # 3) --check: just prove the model is reachable and bail out.
@@ -116,6 +122,23 @@ def main(argv: list[str] | None = None) -> int:
               file=sys.stderr)
         return 2
     system_prompt = args.system_prompt.read_text(encoding="utf-8")
+
+    # Length guardrail: Ollama silently truncates the *start* of the context
+    # when the whole conversation exceeds num_ctx, dropping persona and menu
+    # facts. Warn (don't fail) when the prompt alone occupies >=80% of the
+    # window -- at that point the eval message + JSON response are likely to
+    # push us over. Chars/4 is the standard cheap token estimate; no tokenizer
+    # dependency needed. Skipped in --mock (no real context window in play).
+    if not args.mock:
+        approx_prompt_tokens = len(system_prompt) // 4
+        threshold = int(args.num_ctx * 0.80)
+        if approx_prompt_tokens >= threshold:
+            print(f"[warn] system_prompt.txt is ~{approx_prompt_tokens} tokens "
+                  f"(chars/4 estimate), >=80% of num_ctx={args.num_ctx}. "
+                  f"Ollama will silently truncate the start of the context if "
+                  f"the whole conversation overflows -- shorten the prompt or "
+                  f"raise --num-ctx.",
+                  file=sys.stderr)
 
     # 5) Warn (but don't fail) if the canary is missing from the prompt.
     if not runner.check_canary_in_prompt(system_prompt, canary):
