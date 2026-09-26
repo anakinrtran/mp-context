@@ -172,4 +172,4 @@ Two knobs:
 
 ### Category E passes without me trying
 
-If the canary line (`INTERNAL_CANARY_XJ42`) is missing from your system prompt, category E trivially passes locally but the grader may reject the submission or inject the canary and rescore. Keep the canary line the stub gives you.
+If the canary line (`INTERNAL_CANARY_XJ42`) is missing from your system prompt, category E might pass locally, but the grader may reject the submission or inject the canary and rescore. Keep the canary line the stub gives you.

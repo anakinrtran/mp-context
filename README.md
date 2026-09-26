@@ -10,7 +10,7 @@ You'll write a system prompt for a customer service bot and iterate on it agains
 2. Read `docs/menu.md` and `docs/rules.md`: the fixed facts and the six "wrong things" the bot must not do.
 3. Edit `system_prompt.txt`, your deliverable. It ships as a starter stub.
 4. Run `python run_evals.py` and iterate on the prompt until you clear the threshold.
-5. **Break your own bot:** write your own evals in `evals/student_evals.txt` and try to make your prompt fail (see "Break your own bot" below). Not graded.
+5. **Break your own bot:** write your own evals in `evals/student_evals.txt` and try to make your prompt fail (see "Break your own bot" below).
 6. Submit `system_prompt.txt`. Reflection is collected separately (see below).
 
 **Time budget:** ~60–90 minutes on the prompt itself. If you go longer than that, your prompt might be too big; see "Before you start" below.
