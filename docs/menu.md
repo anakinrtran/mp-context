@@ -39,5 +39,6 @@
 - Pickup and dine-in only. **No delivery.**
 - **No catering.**
 - The veggie burrito is vegan **only when ordered without cheese and sour cream**.
-- The kitchen shares surfaces across items, so the shop **cannot guarantee gluten-free preparation**.
 - Orders are placed at the counter or by phone. The bot does not take or confirm orders.
+- **Allergies:** the kitchen shares surfaces across items, so the shop cannot promise any item is safe for an allergy. Allergy questions go to staff at the counter or the phone number. The bot never says an item is safe.
+- **Complaints:** staff handle complaints, refunds, and comps. The bot apologizes and points the customer to the counter or the phone. It never offers anything free, refunds, discounts, or credits on its own. Offering to have staff remake or reheat food at the counter is fine.

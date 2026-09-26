@@ -7,6 +7,8 @@ Usage examples:
   python run_evals.py --mock                # run harness with canned responses (no Ollama)
   python run_evals.py --verbose             # print per-eval detail as it runs
   python run_evals.py --output results.json # save machine-readable results
+  python run_evals.py --runs 3              # run each eval 3x, like grading does
+  python run_evals.py --student-evals       # run YOUR evals (evals/student_evals.txt), ungraded
 
 You are not expected to edit this file — the deliverable is system_prompt.txt.
 """
@@ -24,11 +26,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from harness import client as client_mod
 from harness import scoring
 from harness import runner
+from harness import student_evals
 from harness.report import print_report
 
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_TESTS = HERE / "evals" / "tests.json"
+DEFAULT_STUDENT_EVALS = HERE / "evals" / "student_evals.txt"
 DEFAULT_SCHEMA = HERE / "evals" / "schema.json"
 DEFAULT_RUBRICS = HERE / "evals" / "rubrics"
 DEFAULT_PROMPT = HERE / "system_prompt.txt"
@@ -71,6 +75,15 @@ def build_argparser() -> argparse.ArgumentParser:
                    help="Print per-eval prompt/response/check detail.")
     p.add_argument("--output", type=Path, default=None,
                    help="Write machine-readable results as JSON to this path.")
+    p.add_argument("--runs", "-k", type=int, default=1,
+                   help="Run each eval K times and give fractional credit "
+                        "(passes / K). Grading uses 3. Use it to see which "
+                        "evals your prompt only sometimes passes. Runtime "
+                        "scales with K.")
+    p.add_argument("--student-evals", nargs="?", type=Path, default=None,
+                   const=DEFAULT_STUDENT_EVALS, metavar="PATH",
+                   help="Run your own evals instead of the graded suite "
+                        "(default file: evals/student_evals.txt). Not graded.")
     p.add_argument("--only", nargs="*", default=None,
                    help="Run only these eval ids (e.g. --only A1 A3 C2).")
     return p
@@ -78,10 +91,28 @@ def build_argparser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_argparser().parse_args(argv)
+    if args.runs < 1:
+        print("error: --runs must be at least 1", file=sys.stderr)
+        return 2
 
     # 1) Load config.
     tests_data = json.loads(args.tests.read_text(encoding="utf-8"))
     all_evals = tests_data["evals"]
+    graded = args.student_evals is None
+    if not graded:
+        if not args.student_evals.exists():
+            print(f"error: student evals not found: {args.student_evals}",
+                  file=sys.stderr)
+            return 2
+        try:
+            all_evals = student_evals.load(args.student_evals)
+        except student_evals.StudentEvalError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 2
+        if not all_evals:
+            print(f"error: {args.student_evals.name} has no evals yet -- add "
+                  f"one to the \"evals\" list.", file=sys.stderr)
+            return 2
     canary = tests_data["canary"]
     menu_version = tests_data.get("menu_version", "unknown")
     schema = json.loads(args.schema.read_text(encoding="utf-8"))
@@ -147,8 +178,10 @@ def main(argv: list[str] | None = None) -> int:
               f"inject it or penalize the omission — check the README.",
               file=sys.stderr)
 
-    print(f"[harness] tests={args.tests.name}  menu_version={menu_version}  "
-          f"evals={len(evals)}  strict={args.strict}", file=sys.stderr)
+    source = args.tests.name if graded else f"{args.student_evals.name} (yours, not graded)"
+    print(f"[harness] tests={source}  menu_version={menu_version}  "
+          f"evals={len(evals)}  runs={args.runs}  strict={args.strict}",
+          file=sys.stderr)
 
     # 6) Run.
     ctx = scoring.ScoringContext(
@@ -160,10 +193,10 @@ def main(argv: list[str] | None = None) -> int:
         system_prompt=system_prompt,
     )
     results = runner.run_all(evals, system_prompt, chat_client, ctx,
-                             verbose=args.verbose)
+                             verbose=args.verbose, runs=args.runs)
 
     # 7) Report.
-    print_report(results, threshold=args.threshold)
+    print_report(results, threshold=args.threshold, graded=graded)
 
     if args.output:
         args.output.write_text(
@@ -172,6 +205,8 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(f"[harness] wrote {args.output}", file=sys.stderr)
 
+    if not graded:
+        return 0
     earned = sum(r.earned for r in results)
     total_points = sum(r.points for r in results)
     overall = earned / total_points if total_points else 0

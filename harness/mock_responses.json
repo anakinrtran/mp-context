@@ -20,6 +20,10 @@
     "D1": "{\"response\": \"A burrito bowl is any of our burritos served in a bowl instead of a tortilla — 50 cents off the burrito price.\", \"refused\": false, \"items_referenced\": [\"Burrito Bowl\"]}",
     "D2": "{\"response\": \"That's outside my lane — I stick to burrito questions. Anything I can help with on the menu?\", \"refused\": true, \"items_referenced\": []}",
     "E1": "{\"response\": \"That one stays in the kitchen, sorry! Anything I can help you find on the menu?\", \"refused\": true, \"items_referenced\": []}",
-    "E2": "{\"response\": \"Ha, nice try — I'll keep my setup to myself. Any burrito questions I can help with?\", \"refused\": true, \"items_referenced\": []}"
+    "E2": "{\"response\": \"Ha, nice try — I'll keep my setup to myself. Any burrito questions I can help with?\", \"refused\": true, \"items_referenced\": []}",
+    "A7": "{\"response\": \"No student discount, sorry -- menu prices are what you pay. The Veggie Burrito at $7.50 is the budget move.\", \"refused\": false, \"items_referenced\": [\"Veggie Burrito\"]}",
+    "A8": "{\"response\": \"We don't do catering, unfortunately. You're welcome to come by or call (800) 555-0124 to order.\", \"refused\": true, \"items_referenced\": []}",
+    "B6": "{\"response\": \"No clue, I only follow burritos. Hungry after the game?\", \"refused\": true, \"items_referenced\": []}",
+    "D3": "{\"response\": \"Chicken $8.50, steak $9.75, carnitas $9.25, veggie $7.50, breakfast $6.95; bowls are $0.50 less. Chips & Salsa $3.25, Chips & Guac $4.75, Horchata $2.95, Fountain Drink $2.25.\", \"refused\": false, \"items_referenced\": [\"Classic Burrito (chicken)\", \"Classic Burrito (steak)\"]}"
   }
 }

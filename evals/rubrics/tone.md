@@ -26,4 +26,4 @@ The default register is casual and warm. But the right register depends on the s
 - If the response is short and in-character with no red flags for the situation, it passes.
 - If the response breaks character, gushes, lectures the customer, or hits the wrong end of the formality dial for the situation, it fails.
 
-Answer with a single JSON object of the form `{"pass": true, "reason": "one short sentence"}` or `{"pass": false, "reason": "one short sentence"}`. No markdown fences.
+Answer with a single JSON object, reason first: `{"reason": "one short sentence", "pass": true}` or `{"reason": "one short sentence", "pass": false}`. No markdown fences.

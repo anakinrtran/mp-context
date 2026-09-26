@@ -72,7 +72,7 @@ This uses canned responses baked into the repo. It's a smoke test of the harness
 python run_evals.py
 ```
 
-This calls Ollama for every eval in `evals/tests.json` plus a judge call for the fuzzier ones. On a laptop, expect **5–15 minutes** for the full run. Iterate faster with `--only`:
+This calls Ollama for every eval in `evals/tests.json` plus a judge call for the fuzzier ones. The suite is 25 evals. Expect roughly **1 minute** for a full run on a machine with a GPU, and **3–10 minutes** on a CPU-only laptop. `--runs 3` takes about 3x as long. Iterate faster with `--only`:
 
 ```bash
 python run_evals.py --only C1 C2 C3 C4 C5
@@ -126,7 +126,7 @@ You can also verify from another terminal with `ollama ps`, which lists loaded m
 
 ### The bot "forgets" its persona or the menu partway through evals
 
-The harness pins Ollama's `num_ctx` to 4096 tokens (Ollama's built-in default is only 2048). If the whole conversation — your system prompt + the eval question + the JSON response — exceeds `num_ctx`, Ollama silently drops tokens from the *start* of the context, which is exactly where your persona and menu live. When your system prompt alone is ≥80% of `num_ctx`, the harness prints:
+The harness pins Ollama's `num_ctx` to 4096 tokens. If the whole conversation — your system prompt + the eval question + the JSON response — exceeds `num_ctx`, Ollama silently drops tokens from the *start* of the context, which is exactly where your persona and menu live. When your system prompt alone is ≥80% of `num_ctx`, the harness prints:
 
 ```
 [warn] system_prompt.txt is ~<n> tokens (chars/4 estimate), ≥80% of num_ctx=4096. ...
@@ -135,7 +135,7 @@ The harness pins Ollama's `num_ctx` to 4096 tokens (Ollama's built-in default is
 Two knobs:
 
 - **Shorten the prompt.** This is usually the right call — see the "shorter is better" note in the README.
-- **Raise the window.** `python run_evals.py --num-ctx 8192`. Costs a bit more RAM per call. `llama3.2:3b` supports up to 131072, so you have plenty of headroom if your machine has the memory.
+- **Raise the window.** `python run_evals.py --num-ctx 8192`. Costs a bit more RAM per call. `llama3.2:3b` supports up to 131072 (at least on my machine), so you have plenty of headroom if your machine has the memory.
 
 ### Category E passes without me trying
 
