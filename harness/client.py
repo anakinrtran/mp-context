@@ -24,7 +24,21 @@ DEFAULT_NUM_CTX = 4096
 # Keep the model resident across edit-run-edit iteration so students don't
 # pay a ~2 GB reload every time they tweak their prompt. Overridable via
 # MP_OLLAMA_KEEP_ALIVE (e.g. "-1" for indefinite, "5m" to reclaim RAM sooner).
-DEFAULT_KEEP_ALIVE = os.environ.get("MP_OLLAMA_KEEP_ALIVE", "30m")
+def _parse_keep_alive(value: str):
+    # Ollama rejects a unitless string like "-1" ("missing unit in duration")
+    # but accepts the same value as a JSON number, so send bare numbers as
+    # numbers (seconds; negative = keep loaded indefinitely).
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    try:
+        return float(value)
+    except ValueError:
+        return value
+
+
+DEFAULT_KEEP_ALIVE = _parse_keep_alive(os.environ.get("MP_OLLAMA_KEEP_ALIVE", "30m"))
 
 # Fixed sampling seed (offset by run index with --runs). Pins results for a
 # given prompt on a given machine, so re-running an unchanged prompt can't
@@ -44,7 +58,7 @@ class OllamaClient:
 
     def __init__(self, model: str = DEFAULT_MODEL, host: Optional[str] = None,
                  temperature: float = 0.2,
-                 keep_alive: str = DEFAULT_KEEP_ALIVE,
+                 keep_alive: str | float = DEFAULT_KEEP_ALIVE,
                  num_ctx: int = DEFAULT_NUM_CTX):
         self.model = model
         self.host = host

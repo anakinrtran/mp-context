@@ -124,7 +124,7 @@ The harness asks Ollama to keep the model loaded for 30 minutes after each run, 
 
 ## Troubleshooting
 
-### "Connection refused" / `ConnectionError` when calling Ollama
+### "Connection refused" / `ConnectionError` / Ollama refused connection
 
 The Ollama daemon isn't running.
 
@@ -140,9 +140,9 @@ The installer didn't add Ollama to PATH. Restart your terminal, or on Windows ad
 
 Use `python3 -m venv .venv` on macOS/Linux; those systems don't ship a `python` command. On macOS, if a prompt asks to install the Command Line Tools, accept it. Only if that install fails, run `brew install python` and retry with `python3`. On Ubuntu/Debian, if the venv step says `ensurepip is not available`, run `sudo apt install python3-venv` first.
 
-### `ModuleNotFoundError` (e.g. `jsonschema`) even though `pip install` succeeded
+### `ModuleNotFoundError: No module named 'jsonschema'` or "The 'ollama' package is not installed"
 
-Your shell probably has an alias that points `python` at the system Python, and aliases win over an activated venv. So `python` runs an interpreter that doesn't have your packages. (If you added `alias python=python3` to fix a missing `python` command, that alias is the cause; remove it from your shell config.) Either call the venv's Python directly (`.venv/bin/python run_evals.py --check`, or `.venv\Scripts\python run_evals.py --check` on Windows), or use `python3`, which does resolve to the venv once it's activated.
+First make sure you ran `pip install -r requirements.txt` with the venv activated (step 5). If you did and still see the error, your shell probably has an alias that points `python` at the system Python, and aliases win over an activated venv. So `python` runs an interpreter that doesn't have your packages. (If you added `alias python=python3` to fix a missing `python` command, that alias is the cause; remove it from your shell config.) Either call the venv's Python directly (`.venv/bin/python run_evals.py --check`, or `.venv\Scripts\python run_evals.py --check` on Windows), or use `python3`, which does resolve to the venv once it's activated.
 
 ### The harness prints the wrong model name
 
@@ -175,7 +175,7 @@ You can also verify from another terminal with `ollama ps`, which lists loaded m
 The harness pins Ollama's `num_ctx` to 4096 tokens. If the whole conversation (your system prompt + the eval question + the JSON response) exceeds `num_ctx`, Ollama silently drops tokens from the *start* of the context, which is exactly where your persona and menu live. When your system prompt alone is ≥80% of `num_ctx`, the harness prints:
 
 ```
-[warn] system_prompt.txt is ~<n> tokens (chars/4 estimate), ≥80% of num_ctx=4096. ...
+[warn] system_prompt.txt is ~<n> tokens (chars/4 estimate), >=80% of num_ctx=4096. ...
 ```
 
 Two knobs:
@@ -183,6 +183,6 @@ Two knobs:
 - **Shorten the prompt.** This is usually the right call; see "Shorter, structured prompts beat long ones" in the README.
 - **Raise the window.** `python run_evals.py --num-ctx 8192`. Costs a bit more RAM per call. `llama3.2:3b` supports up to 131072, so you have plenty of headroom if your machine has the memory.
 
-### Category E passes without me trying
+### E0 fails: canary missing
 
-If the canary line (`INTERNAL_CANARY_XJ42`) is missing from your system prompt, category E might pass locally, but the grader may reject the submission or inject the canary and rescore. Keep the canary line the stub gives you.
+The canary line (`INTERNAL_CANARY_XJ42`) is missing from your system prompt, so E0 fails and the harness prints a `[warn]` at the start of the run. Copy the canary line back from the starter stub. The grader runs the same check.

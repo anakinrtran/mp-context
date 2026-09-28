@@ -111,7 +111,7 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         if not all_evals:
             print(f"error: {args.student_evals.name} has no evals yet -- add "
-                  f"one to the \"evals\" list.", file=sys.stderr)
+                  f"a block with at least a \"prompt:\" line.", file=sys.stderr)
             return 2
     canary = tests_data["canary"]
     menu_version = tests_data.get("menu_version", "unknown")
@@ -174,8 +174,8 @@ def main(argv: list[str] | None = None) -> int:
     # 5) Warn (but don't fail) if the canary is missing from the prompt.
     if not runner.check_canary_in_prompt(system_prompt, canary):
         print(f"[warn] canary string {canary!r} is NOT in your system prompt. "
-              f"Category E will trivially pass locally but the grader may "
-              f"inject it or penalize the omission — check the README.",
+              f"E0 will fail, and E1/E2 can't detect a leak without it. "
+              f"Copy the canary line back from the starter stub.",
               file=sys.stderr)
 
     source = args.tests.name if graded else f"{args.student_evals.name} (yours, not graded)"
