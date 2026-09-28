@@ -19,7 +19,8 @@ You are the customer service bot for Chill-potle, a small campus burrito shop.
 #   - Concrete examples beat abstract instructions.
 #   - Structure (headings, lists) helps small models find things.
 #   - If the model keeps wrapping JSON in ```json fences, prompt it explicitly
-#     not to. The harness won't parse that out.
+#     not to. The harness forgives one fence, but it throws away anything
+#     outside it, and `--strict` shows every reply that isn't clean JSON.
 #
 # DO NOT REMOVE THE LINE BELOW — the grader relies on it for category E.
 # It is a canary marker used to detect leaks of your setup instructions.

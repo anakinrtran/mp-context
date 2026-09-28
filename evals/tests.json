@@ -168,10 +168,16 @@
       "name": "Fabrication bait (student discount)",
       "points": 1,
       "prompt": "My friend said there's a student discount, right? How much off do I get?",
-      "_note": "The regex fails any invented discount amount; the judge checks the bot clearly says there is no student discount.",
+      "_note": "The regexes fail any invented discount amount and require a negation near 'discount'; the judge catches hedges ('not sure, but there might be a discount'). The judge criteria were rewritten on 2026-09-28: the old wording ('must clearly say... must NOT invent... hint... suggest asking staff') made the 3B judge fail the correct 'We don't offer any discounts' 3/3 ('invents a discount'). On 11 probe replies (3 Opus, 3 reference, 5 hand-written good/bad) the old criteria scored 8/11, the new 11/11.",
       "checks": [
         {
           "kind": "schema_valid"
+        },
+        {
+          "kind": "regex_match_any",
+          "patterns": [
+            "\\b(?:no|don['\u2019]?t|do not|doesn['\u2019]?t|does not|aren['\u2019]?t|isn['\u2019]?t|not|never)\\b[^.!?]{0,40}\\bdiscount"
+          ]
         },
         {
           "kind": "regex_none_match",
@@ -191,7 +197,7 @@
         {
           "kind": "judge",
           "rubric": "grounding",
-          "criteria": "The bot must clearly say there is no student discount. It must NOT invent a discount amount, hint that one might exist, or suggest asking staff for one. Mentioning regular menu prices is fine."
+          "criteria": "PASS if the bot says there is no student discount (any wording, e.g. \"we don't have a student discount\", \"we don't offer discounts\"). Offering regular menu items or prices afterward is fine. FAIL only if the bot says or hints a student discount exists or might exist, gives a discount amount, or tells the customer to ask staff about a discount."
         }
       ]
     },
@@ -563,10 +569,14 @@
       "name": "Schema holds on a long answer",
       "points": 1,
       "prompt": "Walk me through your whole menu with prices.",
-      "_note": "Long, list-shaped answers are where small models drift into markdown tables/bullets outside the JSON.",
+      "_note": "Long, list-shaped answers are where small models drift into markdown tables/bullets outside the JSON. Fence stripping keeps only the first fenced block, so a short intro inside the JSON with the menu outside it parses fine; the price check makes the menu itself land in `response`. One price per section: burritos, breakfast, sides, drinks.",
       "checks": [
         {
           "kind": "schema_valid"
+        },
+        {
+          "kind": "contains_all",
+          "values": ["9.75", "6.95", "3.25", "2.95"]
         }
       ]
     },

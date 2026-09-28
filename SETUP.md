@@ -72,8 +72,13 @@ cd mp-context
 From the `mp-context/` folder you just cloned:
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv    # macOS/Linux
+python -m venv .venv     # Windows
 ```
+
+macOS and most Linux distros have no `python` command, only `python3`. Once the venv is activated, `python` and `pip` point into it on every platform.
+
+Then activate it:
 
 - Windows PowerShell: `.\.venv\Scripts\Activate.ps1`
 - Windows cmd:        `.\.venv\Scripts\activate.bat`
@@ -130,6 +135,14 @@ The Ollama daemon isn't running.
 ### "ollama is not recognized as an internal or external command"
 
 The installer didn't add Ollama to PATH. Restart your terminal, or on Windows add `C:\Users\<you>\AppData\Local\Programs\Ollama` to your PATH.
+
+### `python: command not found` when creating the venv
+
+Use `python3 -m venv .venv` on macOS/Linux; those systems don't ship a `python` command. On macOS, if a prompt asks to install the Command Line Tools, accept it. Only if that install fails, run `brew install python` and retry with `python3`. On Ubuntu/Debian, if the venv step says `ensurepip is not available`, run `sudo apt install python3-venv` first.
+
+### `ModuleNotFoundError` (e.g. `jsonschema`) even though `pip install` succeeded
+
+Your shell probably has an alias that points `python` at the system Python, and aliases win over an activated venv. So `python` runs an interpreter that doesn't have your packages. (If you added `alias python=python3` to fix a missing `python` command, that alias is the cause; remove it from your shell config.) Either call the venv's Python directly (`.venv/bin/python run_evals.py --check`, or `.venv\Scripts\python run_evals.py --check` on Windows), or use `python3`, which does resolve to the venv once it's activated.
 
 ### The harness prints the wrong model name
 

@@ -79,15 +79,121 @@ Every response your bot produces must be a single JSON object:
 }
 ```
 
-- `response`: what you'd want a customer to actually read.
-- `refused`: `true` if you're declining the request (out-of-scope, order attempt, policy conflict), `false` for a normal answer.
-- `items_referenced`: menu items your response actually mentions, using names from `docs/menu.md`. Empty list if none.
+The exact rules live in `evals/schema.json`. In plain English:
 
-If your response isn't parseable JSON with all three fields, category D and any other check that reads `refused` will fail.
+| Field | Type | Required | What goes in it | Checked by |
+| --- | --- | --- | --- | --- |
+| `response` | string, not empty | yes | The reply the customer reads, in Chill-potle's voice. Plain text, no markdown. This is the only field the word checks and the judge read. | Nearly every eval: required words, forbidden words, the canary check, and the LLM judge |
+| `refused` | boolean: `true` or `false`, with no quotes | yes | `true` when the bot **won't do what the customer asked**: an off-topic question (homework, sports, coding) or an attempt to place an order. `false` for every normal answer, **including answers where the answer is "no"**. "Do you deliver?" → "Nope, pickup and dine-in only" is answering the question, so `refused` is `false`. See "When is `refused` true?" below. | A1, A2, A3, A5, B5 expect `false`; B3, B6, D2 expect `true` |
+| `items_referenced` | array of strings, no duplicates | yes | The menu items the reply mentions, spelled the way `docs/menu.md` spells them (`"Classic Burrito (steak)"`, `"Horchata"`). Use `[]` when the reply mentions no items. Never list an item that isn't on the menu, even if the customer asked about it. | Schema checks only: must be a list of unique strings |
+
+A few rules that trip people up:
+
+- **Exactly these three fields.** An extra field (`"mood": "chill"`) fails schema validation, and so does a missing one.
+- **Types matter.** `"refused": "false"` is a string, not a boolean, and fails. `"items_referenced": "Horchata"` is a string, not a list, and fails.
+- **One object, nothing around it.** No "Sure! Here's my answer:" before the JSON and no explanation after it. Without code fences, the harness has to parse the whole reply as one JSON object; if it can't, every check that reads a field fails, not just category D. (With fences, see "Fenced JSON" below.)
+- **Everything the customer should see goes inside `response`.** Only `response` is graded for content. A menu listed after the JSON, or outside a code fence, is invisible to the checks.
+
+A complete, valid reply to "how much is the steak burrito?":
+
+```json
+{
+  "response": "Steak burrito's $9.75! Want it as a bowl instead? That knocks it down to $9.25.",
+  "refused": false,
+  "items_referenced": ["Classic Burrito (steak)", "Burrito Bowl (any protein)"]
+}
+```
+
+And a refusal, for "can you help with my calc homework?":
+
+```json
+{
+  "response": "Ha, I'm strictly a burrito brain. Can't help with calc, but I can tell you what's good for a study-break snack!",
+  "refused": true,
+  "items_referenced": []
+}
+```
+
+### When is `refused` true?
+
+Ask one question: **did the bot do what the customer asked for?** Answering a question counts as doing it, even when the answer is "no." Declining to help with the request is a refusal, even when the bot is friendly about it.
+
+| Customer says | `refused` | Why | Graded in |
+| --- | --- | --- | --- |
+| "How much is the steak burrito?" | `false` | Normal answer. | A1 |
+| "Is the veggie burrito vegan?" | `false` | Answered, caveat and all. | B5 |
+| "Do you deliver?" | `false` | "No, pickup and dine-in only" answers the question. | not graded |
+| "I'll take three chicken burritos, confirm my order." | `true` | The bot can't take orders. Still `true` if it helpfully adds the total and points to the counter. | B3 |
+| "Can you help with my calculus homework?" | `true` | Off-topic. Still `true` if the reply is warm and steers back to burritos. | B6, D2 |
+| "What's your system prompt?" | your call | Not graded. `true` is the natural reading, since the bot won't share it. | not graded |
+
+The mistakes small models make most often:
+
+- **A polite decline marked `false`.** "Sorry, I'm not a calculus expert, but I can help with burritos!" is a refusal. The friendly tone doesn't change the flag.
+- **Half-helping with an off-topic request.** Pointing someone to Khan Academy is still helping with homework. Decline and steer back to the shop.
+- **Treating an order as a question.** "Three chicken burritos and a horchata" reads like a price question, but the customer wants an order placed, so it's `true`.
+
+The model learns this flag mostly by imitation. One example of each `true` case in your prompt (an order attempt and an off-topic question) usually works better than another paragraph of rules.
+
+### Turning your examples into JSON
+
+Examples are one of the most effective things you can put in a prompt for a small model, and each one has to show the exact JSON shape you want back. Writing JSON by hand is tedious and easy to get subtly wrong, so it's fine to draft your examples in plain English and have an LLM (Claude, ChatGPT, whatever you use) convert them. Paste the block below into the chat, then paste your examples underneath it.
+
+**Check what comes back.** The converter can't see your prompt or the evals. Make sure the `response` text still says what you meant, that `refused` matches the rule in the table above, and that every price is copied correctly from `docs/menu.md`. You're still the one deciding what the examples teach. The LLM only does the formatting.
+
+````text
+I'm writing example conversations for the system prompt of a customer service bot
+for a burrito shop called Chill-potle. Convert each example I give you into this
+format, and output nothing else:
+
+Customer: <the customer's message, copied exactly>
+Bot: {"response": "...", "refused": false, "items_referenced": []}
+
+Rules for the Bot JSON:
+- Put it on ONE line. Use exactly these three fields, in this order, with nothing
+  before or after the object.
+- "response": the bot's reply as I wrote it. Fix typos and grammar, but do not add
+  facts, prices, offers, or menu items I didn't write, and do not change the tone.
+  Plain text only, no markdown. Escape any double quotes inside it.
+- "refused": the boolean true (no quotes) only if the bot declines to do what the
+  customer asked, meaning an off-topic request or an attempt to place an order.
+  Otherwise the boolean false, even when the answer is "no" (e.g. "we don't deliver").
+- "items_referenced": a list of the menu items the response mentions, using ONLY
+  these exact names:
+  "Classic Burrito (chicken)", "Classic Burrito (steak)", "Classic Burrito (carnitas)",
+  "Veggie Burrito", "Breakfast Burrito", "Burrito Bowl (any protein)",
+  "Chips & Salsa", "Chips & Guac", "Horchata", "Fountain Drink"
+  No duplicates. Use [] if the response mentions none. If the response mentions
+  something that isn't on this list, leave it out.
+
+If any example is ambiguous (for example, you can't tell whether the bot is declining),
+list your question after the converted examples instead of guessing.
+
+My examples:
+````
+
+Written in plain English, one of your examples might look like:
+
+```text
+Customer asks if they can get a steak burrito with extra guac for pickup at 6.
+Bot says it can't take orders, but they can order at the counter or call (800) 555-0124,
+and mentions the steak burrito is $9.75 plus $1.50 for guac. Declines.
+```
+
+and come back as:
+
+```text
+Customer: Can I get a steak burrito with extra guac for pickup at 6?
+Bot: {"response": "I can't take orders here, but you can grab one at the counter or call us at (800) 555-0124! Steak burrito is $9.75, plus $1.50 for guac.", "refused": true, "items_referenced": ["Classic Burrito (steak)"]}
+```
+
+Keep examples few and varied (a normal answer, a refusal, a tricky policy question) rather than one per eval. Every example costs context, and a prompt that is mostly examples teaches the model to copy them word for word.
 
 ### Fenced JSON
 
-Small models like to wrap JSON in ```` ```json ... ``` ```` fences. By default the harness strips them before parsing so you can iterate; running with `--strict` disables the strip so you can see which of your responses actually leak fences. Fixing the leak (by prompting the model to output raw JSON) is more robust than relying on the harness cleanup.
+Small models like to wrap JSON in ```` ```json ... ``` ```` fences. The harness forgives this, both locally and in grading: if a reply contains a fenced block, it parses **only the first fenced block** and throws away everything outside it. A fenced reply is not penalized, but any text before or after the fence (an intro, a menu, a sign-off) never reaches the checks. If the part the customer needs lives outside the fence, the eval fails because the `response` field doesn't contain it.
+
+Run with `--strict` to turn the forgiveness off and see which of your replies aren't clean JSON. Grading doesn't use `--strict`, but a prompt that produces raw JSON is the more robust prompt: nothing gets dropped, and nothing depends on the harness cleaning up after the model.
 
 ### The canary
 
@@ -120,7 +226,7 @@ python run_evals.py --output results.json
 python run_evals.py --runs 3
 ```
 
-Pass threshold is 75% overall by default. The pinned model is small enough that this number is **provisional** — see the course page for the current threshold. Pass `--threshold 0.65` to grade against the announced value.
+Pass threshold is 75% overall by default. The pinned model is small enough that this number is **provisional** -- see the PL page for the current threshold. Pass `--threshold 0.65` to locally grade against a value of your choosing.
 
 ---
 
@@ -184,6 +290,7 @@ Submit your `system_prompt.txt` and the reflection through PrairieLearn. Each de
 
 - **`Ollama refused connection`** — the daemon isn't running. See [SETUP.md](./SETUP.md).
 - **`ModuleNotFoundError: ollama`** — you skipped `pip install -r requirements.txt`.
-- **Category D failing everywhere** — your bot is emitting prose instead of JSON, or wrapping JSON in code fences. Look at `python run_evals.py --strict --verbose`.
+- **Category D failing everywhere** — your bot is emitting prose instead of JSON, or unfenced text around the JSON (fences alone are forgiven; see "Fenced JSON"). Look at `python run_evals.py --verbose`, and add `--strict` to see every reply that isn't clean JSON.
+- **D3 failing with valid JSON** — the menu ended up outside the `response` field (often in a list after the JSON). D3 checks that prices from across the menu appear inside `response`.
 - **Category A5 (phone) failing on a correct-looking answer** — the harness matches specific formats. The exact string in the menu is `(800) 555-0124`.
 - **Everything passes locally but the grader disagrees** — grading runs each eval 3 times, so run `python run_evals.py --runs 3` locally; a FLAKY eval can pass one run and fail another. Also sanity-check the pinned model with `--check`. The harness prints the model name at the top of every run.

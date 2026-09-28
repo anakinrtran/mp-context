@@ -66,9 +66,9 @@ def build_argparser() -> argparse.ArgumentParser:
                         "harness/mock_responses.json. For smoke tests only.")
     p.add_argument("--strict", action="store_true",
                    help="Do not strip markdown code fences from model output "
-                        "before JSON parsing. Off by default — flip on to see "
-                        "how many of your responses would fail without the "
-                        "harness cleaning up.")
+                        "before JSON parsing. Off by default and off in "
+                        "grading — flip on to see how many of your responses "
+                        "would fail without the harness cleaning up.")
     p.add_argument("--threshold", type=float, default=0.75,
                    help="Pass threshold (fraction, e.g. 0.75).")
     p.add_argument("--verbose", "-v", action="store_true",
